@@ -1,0 +1,44 @@
+name: 'PWS GitHub Actions'
+on:
+  - pull_request
+  - push
+jobs:
+  pws:
+    name: 'PWS'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@main
+      - name: BeyondTrust-GA
+        id: bt_secret
+        uses: BeyondTrust/secrets-safe-action@v1
+        with:
+          SECRET_PATH: '{"path": "TS-GrpApi/matrix/azurekey", "output_id": "azurekeys"}'
+        env:
+          API_URL: ${{ secrets.API_URL }}
+          CLIENT_ID: ${{ secrets.CLIENT_ID }}
+          CLIENT_SECRET: ${{ secrets.CLIENT_SECRET }}
+      
+      - name: Import Secrets
+        run: |
+          touch secrets.tf
+          echo '${{ steps.bt_secret.outputs.azurekeys }}' >> secrets.tf
+          #cat secrets.tf
+      - name: 'Terraform Init'
+        id: init
+        run: terraform init
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: 'Terraform Validate'
+        id: validate
+        run: terraform validate
+      - name: 'Terraform Plan'
+        id: plan
+        run: terraform plan
+        continue-on-error: true 
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: 'Terraform Apply'
+        id: apply
+        run: terraform apply -auto-approve
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
