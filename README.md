@@ -1,3 +1,3 @@
 # MAC
-# demo-bt-plugin-pub ver: 7/15/24.1
+# demo-bt-plugin-pub ver: 11/3/24.1
 #
